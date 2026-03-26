@@ -1,6 +1,10 @@
 package usecase
 
-import "authcore/internal/domain/repository"
+import (
+	"authcore/internal/domain/repository"
+	"errors"
+	"log"
+)
 
 type AuthService struct {
 	repo repository.UserRepository
@@ -12,7 +16,20 @@ func NewAuthService(repo repository.UserRepository) *AuthService {
 
 func (s AuthService) Register(email, password string) error {
 
-	err := s.repo.CreateUser(email, password)
+	user, err := s.repo.GetUserByEmail(email)
+
+	if err != nil {
+
+		log.Println("User not found", err)
+	}
+
+	if user != nil {
+		if user.Email == email {
+			return errors.New("Account already exists")
+		}
+	}
+
+	err = s.repo.CreateUser(email, password)
 
 	if err != nil {
 		return err

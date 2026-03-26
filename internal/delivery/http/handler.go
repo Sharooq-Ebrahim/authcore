@@ -1,7 +1,7 @@
 package http
 
 import (
-	usecase "authcore/internal/use_case"
+	"authcore/internal/usecase"
 	"encoding/json"
 	"net/http"
 )
@@ -26,7 +26,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	str, err := h.authService.Login(req.Email, req.Password)
+	err := h.authService.Register(req.Email, req.Password)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -34,7 +34,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(str)
+	json.NewEncoder(w).Encode("User registered successfully")
 
 }
 
