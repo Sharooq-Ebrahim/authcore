@@ -22,19 +22,18 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Invalid request body")
 		return
 	}
 
 	err := h.authService.Register(req.Email, req.Password)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode("User registered successfully")
+	writeResponse(w, http.StatusCreated, true, "User registered successfully", nil, nil)
 
 }
 
@@ -46,18 +45,17 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Invalid request body")
 		return
 	}
 
 	str, err := h.authService.Login(req.Email, req.Password)
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(str)
+	writeResponse(w, http.StatusOK, true, str, nil, nil)
 
 }
