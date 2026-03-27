@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"authcore/internal/domain/repository"
+	"authcore/internal/domain/service"
 	"authcore/internal/infrastructure/security"
 	"errors"
 	"log"
@@ -10,10 +11,11 @@ import (
 type AuthService struct {
 	repo          repository.UserRepository
 	BcryptService security.BcryptService
+	TokenService  service.TokenService
 }
 
-func NewAuthService(repo repository.UserRepository) *AuthService {
-	return &AuthService{repo: repo}
+func NewAuthService(repo repository.UserRepository, tokenService service.TokenService) *AuthService {
+	return &AuthService{repo: repo, TokenService: tokenService}
 }
 
 func (s AuthService) Register(email, password string) error {
@@ -65,6 +67,12 @@ func (s AuthService) Login(email, password string) (string, error) {
 		return "", errors.New("Password Mismatch")
 	}
 
-	return "Login successfull", nil
+	token, err := s.TokenService.GenerateToken(user)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
 
 }

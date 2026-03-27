@@ -49,13 +49,15 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	str, err := h.authService.Login(req.Email, req.Password)
+	token, err := h.authService.Login(req.Email, req.Password)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
 		return
 	}
 
-	writeResponse(w, http.StatusOK, true, str, nil, nil)
+	writeResponse(w, http.StatusOK, true, "Login successful", map[string]string{
+		"token": token,
+	}, nil)
 
 }

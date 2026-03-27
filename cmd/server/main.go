@@ -5,6 +5,7 @@ import (
 	handler "authcore/internal/delivery/http"
 	"authcore/internal/infrastructure/db"
 	"authcore/internal/infrastructure/repository"
+	"authcore/internal/infrastructure/security"
 	"authcore/internal/usecase"
 	"log"
 	"net/http"
@@ -24,7 +25,9 @@ func main() {
 
 	userRepo := repository.NewUserRepository(db)
 
-	userService := usecase.NewAuthService(userRepo)
+	jwtService := security.NewJWTService(config.JWTSecret, 24)
+
+	userService := usecase.NewAuthService(userRepo, jwtService)
 
 	userhandler := handler.NewAuthHandler(userService)
 
