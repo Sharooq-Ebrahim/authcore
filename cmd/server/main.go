@@ -25,7 +25,8 @@ func main() {
 
 	userRepo := repository.NewUserRepository(db)
 
-	jwtService := security.NewJWTService(config.JWTSecret, 24)
+	jwtService := security.NewJWTService(config.JWTSecret, 24, 7)
+
 
 	userService := usecase.NewAuthService(userRepo, jwtService)
 

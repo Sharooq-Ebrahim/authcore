@@ -49,30 +49,37 @@ func (s AuthService) Register(email, password string) error {
 
 }
 
-func (s AuthService) Login(email, password string) (string, error) {
+func (s AuthService) Login(email, password string) (string, string, error) {
 
 	user, err := s.repo.GetUserByEmail(email)
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if user == nil {
-		return "", errors.New("User not found")
+		return "", "", errors.New("User not found")
 	}
 
 	err = s.BcryptService.CheckPassword(password, user.PasswordHash)
 
 	if err != nil {
-		return "", errors.New("Password Mismatch")
+		return "", "", errors.New("Password Mismatch")
 	}
 
-	token, err := s.TokenService.GenerateToken(user)
+	accessToken, err := s.TokenService.GenerateToken(user)
 
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return token, nil
+	refreshToken, err := s.TokenService.GenerateRefreshToken(user)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
 
 }
+

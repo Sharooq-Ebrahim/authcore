@@ -49,7 +49,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.authService.Login(req.Email, req.Password)
+	accessToken, refreshToken, err := h.authService.Login(req.Email, req.Password)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
@@ -57,7 +57,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, http.StatusOK, true, "Login successful", map[string]string{
-		"token": token,
+		"access_token":  accessToken,
+		"refresh_token": refreshToken,
 	}, nil)
+
 
 }
