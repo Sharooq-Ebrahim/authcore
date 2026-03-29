@@ -34,6 +34,8 @@ func main() {
 
 	http.HandleFunc("/register", userhandler.Register)
 	http.HandleFunc("/login", userhandler.Login)
+	http.HandleFunc("/refresh", userhandler.RefreshToken)
+
 
 	http.ListenAndServe(":"+config.PORT, nil)
 

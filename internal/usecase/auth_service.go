@@ -83,3 +83,37 @@ func (s AuthService) Login(email, password string) (string, string, error) {
 
 }
 
+
+func (s AuthService) RefreshToken(refreshToken string) (string, string, error) {
+
+	userID, err := s.TokenService.ValidateRefreshToken(refreshToken)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	user, err := s.repo.GetUserByID(userID)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	if user == nil {
+		return "", "", errors.New("user not found")
+	}
+
+	newAccessToken, err := s.TokenService.GenerateToken(user)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	newRefreshToken, err := s.TokenService.GenerateRefreshToken(user)
+
+	if err != nil {
+		return "", "", err
+	}
+
+	return newAccessToken, newRefreshToken, nil
+
+}

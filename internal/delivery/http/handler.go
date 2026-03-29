@@ -61,5 +61,30 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		"refresh_token": refreshToken,
 	}, nil)
 
+}
+
+func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
+
+	var req struct {
+		RefreshToken string `json:"refresh_token"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Invalid request body")
+		return
+	}
+
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(req.RefreshToken)
+
+	if err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		return
+	}
+
+	writeResponse(w, http.StatusOK, true, "Token refreshed successfully", map[string]string{
+		"access_token":  newAccessToken,
+		"refresh_token": newRefreshToken,
+	}, nil)
 
 }
+

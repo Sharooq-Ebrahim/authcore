@@ -2,6 +2,7 @@ package security
 
 import (
 	"authcore/internal/domain/entity"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -42,4 +43,33 @@ func (j *JWTService) GenerateRefreshToken(user *entity.User) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(j.secretKey)
+}
+
+func (j *JWTService) ValidateRefreshToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return j.secretKey, nil
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		tokenType, typeOk := claims["type"].(string)
+		if !typeOk || tokenType != "refresh" {
+			return "", errors.New("invalid token type")
+		}
+
+		userID, userOk := claims["user_id"].(string)
+
+		if !userOk {
+			return "", errors.New("userID not found in token")
+		}
+
+		return userID, nil
+
+	}
+
+	return "", errors.New("invalid token")
+
 }
