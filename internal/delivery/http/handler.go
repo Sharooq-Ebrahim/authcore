@@ -16,6 +16,11 @@ func NewAuthHandler(authService *usecase.AuthService) *AuthHandler {
 
 func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
+	if r.Method != http.MethodPost {
+		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
+		return
+	}
+
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -38,6 +43,11 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
+		return
+	}
 
 	var req struct {
 		Email    string `json:"email"`
@@ -65,6 +75,11 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
+	if r.Method != http.MethodPost {
+		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
+		return
+	}
+
 	var req struct {
 		RefreshToken string `json:"refresh_token"`
 	}
@@ -87,4 +102,3 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	}, nil)
 
 }
-

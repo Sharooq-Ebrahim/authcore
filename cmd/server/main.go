@@ -27,8 +27,9 @@ func main() {
 
 	jwtService := security.NewJWTService(config.JWTSecret, 24, 7)
 
+	passwordService := security.NewBcryptService()
 
-	userService := usecase.NewAuthService(userRepo, jwtService)
+	userService := usecase.NewAuthService(userRepo, passwordService, jwtService)
 
 	userhandler := handler.NewAuthHandler(userService)
 

@@ -1,8 +1,8 @@
 package dto
 
 type User struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	CreatedAt string `json:"created_at"`
+	ID        string `json:"id" validate:"omitempty"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required"`
+	CreatedAt string `json:"created_at" validate:"omitempty"`
 }

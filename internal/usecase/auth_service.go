@@ -3,22 +3,22 @@ package usecase
 import (
 	"authcore/internal/domain/repository"
 	"authcore/internal/domain/service"
-	"authcore/internal/infrastructure/security"
+
 	"errors"
 	"log"
 )
 
 type AuthService struct {
-	repo          repository.UserRepository
-	BcryptService security.BcryptService
-	TokenService  service.TokenService
+	repo            repository.UserRepository
+	passwordService service.PasswordService
+	TokenService    service.TokenService
 }
 
-func NewAuthService(repo repository.UserRepository, tokenService service.TokenService) *AuthService {
-	return &AuthService{repo: repo, TokenService: tokenService}
+func NewAuthService(repo repository.UserRepository, passwordService service.PasswordService, tokenService service.TokenService) *AuthService {
+	return &AuthService{repo: repo, passwordService: passwordService, TokenService: tokenService}
 }
 
-func (s AuthService) Register(email, password string) error {
+func (s *AuthService) Register(email, password string) error {
 
 	user, err := s.repo.GetUserByEmail(email)
 
@@ -33,7 +33,7 @@ func (s AuthService) Register(email, password string) error {
 		}
 	}
 
-	hashedPassword, err := s.BcryptService.HashedPassword(password)
+	hashedPassword, err := s.passwordService.HashPassword(password)
 
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (s AuthService) Register(email, password string) error {
 
 }
 
-func (s AuthService) Login(email, password string) (string, string, error) {
+func (s *AuthService) Login(email, password string) (string, string, error) {
 
 	user, err := s.repo.GetUserByEmail(email)
 
@@ -61,7 +61,7 @@ func (s AuthService) Login(email, password string) (string, string, error) {
 		return "", "", errors.New("User not found")
 	}
 
-	err = s.BcryptService.CheckPassword(password, user.PasswordHash)
+	err = s.passwordService.CheckPassword(password, user.PasswordHash)
 
 	if err != nil {
 		return "", "", errors.New("Password Mismatch")
@@ -83,8 +83,7 @@ func (s AuthService) Login(email, password string) (string, string, error) {
 
 }
 
-
-func (s AuthService) RefreshToken(refreshToken string) (string, string, error) {
+func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
 
 	userID, err := s.TokenService.ValidateRefreshToken(refreshToken)
 
