@@ -39,6 +39,9 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	).Scan(&user.ID, &user.Email, &user.PasswordHash)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -52,6 +55,9 @@ func (r *userRepository) GetUserByID(id string) (*entity.User, error) {
 	err := r.db.QueryRow("SELECT id,email, password FROM users WHERE id =$1", id).Scan(&user.ID, &user.Email, &user.PasswordHash)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 

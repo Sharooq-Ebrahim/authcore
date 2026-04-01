@@ -13,19 +13,17 @@ import (
 
 func main() {
 
-	config := config.LoadEnv()
+	cfg := config.LoadEnv()
 
-	log.Println("Database URL:", config.DatabaseURL)
-
-	db, err := db.ConnectDB(config.DatabaseURL)
+	dbConn, err := db.ConnectDB(cfg.DatabaseURL)
 
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	userRepo := repository.NewUserRepository(db)
+	userRepo := repository.NewUserRepository(dbConn)
 
-	jwtService := security.NewJWTService(config.JWTSecret, 24, 7)
+	jwtService := security.NewJWTService(cfg.JWTSecret, cfg.JWTExpirationMinutes, cfg.JWTRefreshExpirationHours)
 
 	passwordService := security.NewBcryptService()
 
@@ -37,7 +35,10 @@ func main() {
 	http.HandleFunc("/login", userhandler.Login)
 	http.HandleFunc("/refresh", userhandler.RefreshToken)
 
+	err = http.ListenAndServe(":"+cfg.PORT, nil)
 
-	http.ListenAndServe(":"+config.PORT, nil)
+	if err != nil {
+		log.Fatal("Failed to start server:", err)
+	}
 
 }
