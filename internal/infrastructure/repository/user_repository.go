@@ -13,13 +13,13 @@ func NewUserRepository(db *sql.DB) *userRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) CreateUser(email, password string) error {
+func (r *userRepository) CreateUser(email, password, role string) error {
 
 	user := entity.User{}
 
 	err := r.db.QueryRow(
-		"INSERT INTO users (email, password, created_at) VALUES ($1, $2, NOW()) RETURNING id",
-		email, password,
+		"INSERT INTO users (email, password, role, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id",
+		email, password, role,
 	).Scan(&user.ID)
 
 	if err != nil {
@@ -34,9 +34,9 @@ func (r *userRepository) GetUserByEmail(email string) (*entity.User, error) {
 	user := entity.User{}
 
 	err := r.db.QueryRow(
-		"SELECT id, email, password FROM users WHERE email = $1",
+		"SELECT id, email, password, role FROM users WHERE email = $1",
 		email,
-	).Scan(&user.ID, &user.Email, &user.PasswordHash)
+	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Role)
 
 	if err != nil {
 		return nil, err
@@ -49,7 +49,7 @@ func (r *userRepository) GetUserByID(id string) (*entity.User, error) {
 
 	user := entity.User{}
 
-	err := r.db.QueryRow("SELECT id,email, password FROM users WHERE id =$1", id).Scan(&user.ID, &user.Email, &user.PasswordHash)
+	err := r.db.QueryRow("SELECT id, email, password, role FROM users WHERE id = $1", id).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Role)
 
 	if err != nil {
 		return nil, err

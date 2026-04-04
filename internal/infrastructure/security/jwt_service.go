@@ -26,6 +26,7 @@ func (j *JWTService) GenerateToken(user *entity.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
 		"email":   user.Email,
+		"role":    user.Role,
 		"type":    "access",
 		"exp":     time.Now().Add(time.Hour * time.Duration(j.expirationHours)).Unix(),
 	}

@@ -18,7 +18,7 @@ func NewAuthService(repo repository.UserRepository, passwordService service.Pass
 	return &AuthService{repo: repo, passwordService: passwordService, TokenService: tokenService}
 }
 
-func (s *AuthService) Register(email, password string) error {
+func (s *AuthService) Register(email, password, role string) error {
 
 	user, err := s.repo.GetUserByEmail(email)
 
@@ -39,7 +39,7 @@ func (s *AuthService) Register(email, password string) error {
 		return err
 	}
 
-	err = s.repo.CreateUser(email, hashedPassword)
+	err = s.repo.CreateUser(email, hashedPassword, role)
 
 	if err != nil {
 		return err

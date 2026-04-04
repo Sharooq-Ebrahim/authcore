@@ -24,6 +24,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
+		Role     string `json:"role"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -31,7 +32,12 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.authService.Register(req.Email, req.Password)
+	role := req.Role
+	if role == "" {
+		role = "user"
+	}
+
+	err := h.authService.Register(req.Email, req.Password, role)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
