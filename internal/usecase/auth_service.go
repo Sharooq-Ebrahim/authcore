@@ -5,7 +5,6 @@ import (
 	"authcore/internal/domain/service"
 
 	"errors"
-	"log"
 )
 
 type AuthService struct {
@@ -21,10 +20,8 @@ func NewAuthService(repo repository.UserRepository, passwordService service.Pass
 func (s *AuthService) Register(email, password, role string) error {
 
 	user, err := s.repo.GetUserByEmail(email)
-
 	if err != nil {
-
-		log.Println("User not found", err)
+		return err
 	}
 
 	if user != nil {
@@ -58,13 +55,13 @@ func (s *AuthService) Login(email, password string) (string, string, error) {
 	}
 
 	if user == nil {
-		return "", "", errors.New("User not found")
+		return "", "", errors.New("Invalid Email or Password")
 	}
 
 	err = s.passwordService.CheckPassword(password, user.PasswordHash)
 
 	if err != nil {
-		return "", "", errors.New("Password Mismatch")
+		return "", "", errors.New("Invalid Email or Password")
 	}
 
 	accessToken, err := s.TokenService.GenerateToken(user)
