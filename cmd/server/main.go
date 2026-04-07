@@ -36,6 +36,7 @@ func main() {
 	http.HandleFunc("/refresh", userhandler.RefreshToken)
 	http.HandleFunc("/verify", userhandler.VerifyToken)
 	http.HandleFunc("/profile", userhandler.GetUserProfile)
+	http.HandleFunc("/assign-role", userhandler.AssignRole)
 
 	err = http.ListenAndServe(":"+cfg.PORT, nil)
 

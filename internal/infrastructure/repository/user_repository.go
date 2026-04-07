@@ -63,3 +63,15 @@ func (r *userRepository) GetUserByID(id string) (*entity.User, error) {
 
 	return &user, nil
 }
+
+func (r *userRepository) UpdateUserRole(id, role string) error {
+
+	_, err := r.db.Exec("UPDATE users SET role = $1 WHERE id = $2", role, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

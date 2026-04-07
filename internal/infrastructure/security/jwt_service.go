@@ -28,7 +28,7 @@ func (j *JWTService) GenerateToken(user *entity.User) (string, error) {
 		"email":   user.Email,
 		"role":    user.Role,
 		"type":    "access",
-		"exp":     time.Now().Add(time.Hour * time.Duration(j.expirationMinutes)).Unix(),
+		"exp":     time.Now().Add(time.Minute * time.Duration(j.expirationMinutes)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

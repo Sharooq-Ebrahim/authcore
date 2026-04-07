@@ -1,6 +1,7 @@
 package http
 
 import (
+	"authcore/internal/domain/entity"
 	"authcore/internal/usecase"
 	"encoding/json"
 	"net/http"
@@ -25,7 +26,6 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
-		Role     string `json:"role"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -33,12 +33,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	role := req.Role
-	if role == "" {
-		role = "user"
-	}
-
-	err := h.authService.Register(req.Email, req.Password, role)
+	err := h.authService.Register(req.Email, req.Password, entity.RoleUser)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
@@ -163,5 +158,33 @@ func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeResponse(w, http.StatusOK, true, "User profile retrieved successfully", claims, nil)
+
+}
+
+func (h *AuthHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
+		return
+	}
+
+	var req struct {
+		Email string `json:"email"`
+		Role  string `json:"role"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Invalid request body")
+		return
+	}
+
+	err := h.authService.AssignRole(req.Email, req.Role)
+
+	if err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		return
+	}
+
+	writeResponse(w, http.StatusOK, true, "Role assigned successfully", nil, nil)
 
 }

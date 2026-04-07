@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"authcore/internal/domain/entity"
 	"authcore/internal/domain/repository"
 	"authcore/internal/domain/service"
 
@@ -161,5 +162,31 @@ func (s *AuthService) GetUserProfile(token string) (map[string]interface{}, erro
 		"role":       user.Role,
 		"created_at": user.CreatedAt,
 	}, nil
+
+}
+
+func (s *AuthService) AssignRole(email, role string) error {
+
+	user, err := s.repo.GetUserByEmail(email)
+
+	if err != nil {
+		return err
+	}
+
+	if user == nil {
+		return errors.New("user not found")
+	}
+
+	if role != entity.RoleUser && role != entity.RoleAdmin {
+		return errors.New("invalid role")
+	}
+
+	err = s.repo.UpdateUserRole(user.ID, role)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
