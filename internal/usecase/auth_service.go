@@ -11,11 +11,11 @@ import (
 type AuthService struct {
 	repo            repository.UserRepository
 	passwordService service.PasswordService
-	TokenService    service.TokenService
+	tokenService    service.TokenService
 }
 
 func NewAuthService(repo repository.UserRepository, passwordService service.PasswordService, tokenService service.TokenService) *AuthService {
-	return &AuthService{repo: repo, passwordService: passwordService, TokenService: tokenService}
+	return &AuthService{repo: repo, passwordService: passwordService, tokenService: tokenService}
 }
 
 func (s *AuthService) Register(email, password, role string) error {
@@ -26,9 +26,7 @@ func (s *AuthService) Register(email, password, role string) error {
 	}
 
 	if user != nil {
-		if user.Email == email {
-			return errors.New("Account already exists")
-		}
+		return errors.New("account already exists")
 	}
 
 	hashedPassword, err := s.passwordService.HashPassword(password)
@@ -65,13 +63,13 @@ func (s *AuthService) Login(email, password string) (string, string, error) {
 		return "", "", errors.New("Invalid Email or Password")
 	}
 
-	accessToken, err := s.TokenService.GenerateToken(user)
+	accessToken, err := s.tokenService.GenerateToken(user)
 
 	if err != nil {
 		return "", "", err
 	}
 
-	refreshToken, err := s.TokenService.GenerateRefreshToken(user)
+	refreshToken, err := s.tokenService.GenerateRefreshToken(user)
 
 	if err != nil {
 		return "", "", err
@@ -83,7 +81,7 @@ func (s *AuthService) Login(email, password string) (string, string, error) {
 
 func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
 
-	userID, err := s.TokenService.ValidateRefreshToken(refreshToken)
+	userID, err := s.tokenService.ValidateRefreshToken(refreshToken)
 
 	if err != nil {
 		return "", "", err
@@ -99,13 +97,13 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 		return "", "", errors.New("user not found")
 	}
 
-	newAccessToken, err := s.TokenService.GenerateToken(user)
+	newAccessToken, err := s.tokenService.GenerateToken(user)
 
 	if err != nil {
 		return "", "", err
 	}
 
-	newRefreshToken, err := s.TokenService.GenerateRefreshToken(user)
+	newRefreshToken, err := s.tokenService.GenerateRefreshToken(user)
 
 	if err != nil {
 		return "", "", err
@@ -117,7 +115,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 
 func (s *AuthService) VerifyToken(token string) (map[string]interface{}, error) {
 
-	claims, err := s.TokenService.ValidateToken(token)
+	claims, err := s.tokenService.ValidateToken(token)
 
 	if err != nil {
 		return nil, err
@@ -129,7 +127,7 @@ func (s *AuthService) VerifyToken(token string) (map[string]interface{}, error) 
 
 func (s *AuthService) GetUserProfile(token string) (map[string]interface{}, error) {
 
-	claims, err := s.TokenService.ValidateToken(token)
+	claims, err := s.tokenService.ValidateToken(token)
 
 	if err != nil {
 		return nil, err

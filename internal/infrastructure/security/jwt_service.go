@@ -48,6 +48,9 @@ func (j *JWTService) GenerateRefreshToken(user *entity.User) (string, error) {
 
 func (j *JWTService) ValidateRefreshToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return j.secretKey, nil
 	})
 
@@ -77,6 +80,9 @@ func (j *JWTService) ValidateRefreshToken(tokenString string) (string, error) {
 
 func (j *JWTService) ValidateToken(tokenString string) (map[string]interface{}, error) {
 	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
 		return j.secretKey, nil
 	})
 

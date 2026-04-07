@@ -33,6 +33,16 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.TrimSpace(req.Email) == "" || strings.TrimSpace(req.Password) == "" {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Email and password are required")
+		return
+	}
+
+	if len(req.Password) < 8 {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Password must be at least 8 characters")
+		return
+	}
+
 	err := h.authService.Register(req.Email, req.Password, entity.RoleUser)
 
 	if err != nil {
@@ -61,10 +71,15 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if strings.TrimSpace(req.Email) == "" || strings.TrimSpace(req.Password) == "" {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Email and password are required")
+		return
+	}
+
 	accessToken, refreshToken, err := h.authService.Login(req.Email, req.Password)
 
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		writeResponse(w, http.StatusUnauthorized, false, "", nil, err.Error())
 		return
 	}
 
@@ -134,7 +149,7 @@ func (h *AuthHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 
-	if r.Method != http.MethodPost {
+	if r.Method != http.MethodGet {
 		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
 		return
 	}
