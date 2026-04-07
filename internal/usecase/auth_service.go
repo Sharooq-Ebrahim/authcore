@@ -113,3 +113,53 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 	return newAccessToken, newRefreshToken, nil
 
 }
+
+func (s *AuthService) VerifyToken(token string) (map[string]interface{}, error) {
+
+	claims, err := s.TokenService.ValidateToken(token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return claims, nil
+
+}
+
+func (s *AuthService) GetUserProfile(token string) (map[string]interface{}, error) {
+
+	claims, err := s.TokenService.ValidateToken(token)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tokenType, typeOk := claims["type"].(string)
+	if !typeOk || tokenType != "access" {
+		return nil, errors.New("invalid token type")
+	}
+
+	userID, ok := claims["user_id"].(string)
+
+	if !ok {
+		return nil, errors.New("userID not found in token")
+	}
+
+	user, err := s.repo.GetUserByID(userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, errors.New("user not found")
+	}
+
+	return map[string]interface{}{
+		"id":         user.ID,
+		"email":      user.Email,
+		"role":       user.Role,
+		"created_at": user.CreatedAt,
+	}, nil
+
+}

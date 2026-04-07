@@ -4,6 +4,7 @@ import (
 	"authcore/internal/usecase"
 	"encoding/json"
 	"net/http"
+	"strings"
 )
 
 type AuthHandler struct {
@@ -106,5 +107,61 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		"access_token":  newAccessToken,
 		"refresh_token": newRefreshToken,
 	}, nil)
+
+}
+
+func (h *AuthHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
+		return
+	}
+
+	var req struct {
+		Token string `json:"token"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Invalid request body")
+		return
+	}
+
+	claims, err := h.authService.VerifyToken(req.Token)
+
+	if err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		return
+	}
+
+	writeResponse(w, http.StatusOK, true, "Token verified successfully", claims, nil)
+
+}
+
+func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
+
+	if r.Method != http.MethodPost {
+		writeResponse(w, http.StatusMethodNotAllowed, false, "", nil, "Method not allowed")
+		return
+	}
+
+	authHeader := r.Header.Get("Authorization")
+	token := authHeader
+	if parts := strings.Split(authHeader, " "); len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		token = parts[1]
+	}
+
+	if token == "" {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, "Token not provided")
+		return
+	}
+
+	claims, err := h.authService.GetUserProfile(token)
+
+	if err != nil {
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		return
+	}
+
+	writeResponse(w, http.StatusOK, true, "User profile retrieved successfully", claims, nil)
 
 }

@@ -9,16 +9,16 @@ import (
 )
 
 type JWTService struct {
-	secretKey                  []byte
-	expirationHours            int
-	refreshTokenExpirationDays int
+	secretKey                   []byte
+	expirationMinutes           int
+	refreshTokenExpirationHours int
 }
 
-func NewJWTService(secretKey string, expirationHours int, refreshTokenExpirationDays int) *JWTService {
+func NewJWTService(secretKey string, expirationMinutes int, refreshTokenExpirationHours int) *JWTService {
 	return &JWTService{
-		secretKey:                  []byte(secretKey),
-		expirationHours:            expirationHours,
-		refreshTokenExpirationDays: refreshTokenExpirationDays,
+		secretKey:                   []byte(secretKey),
+		expirationMinutes:           expirationMinutes,
+		refreshTokenExpirationHours: refreshTokenExpirationHours,
 	}
 }
 
@@ -28,7 +28,7 @@ func (j *JWTService) GenerateToken(user *entity.User) (string, error) {
 		"email":   user.Email,
 		"role":    user.Role,
 		"type":    "access",
-		"exp":     time.Now().Add(time.Hour * time.Duration(j.expirationHours)).Unix(),
+		"exp":     time.Now().Add(time.Hour * time.Duration(j.expirationMinutes)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -39,7 +39,7 @@ func (j *JWTService) GenerateRefreshToken(user *entity.User) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": user.ID,
 		"type":    "refresh",
-		"exp":     time.Now().Add(time.Hour * 24 * time.Duration(j.refreshTokenExpirationDays)).Unix(),
+		"exp":     time.Now().Add(time.Hour * 24 * time.Duration(j.refreshTokenExpirationHours)).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -73,4 +73,20 @@ func (j *JWTService) ValidateRefreshToken(tokenString string) (string, error) {
 
 	return "", errors.New("invalid token")
 
+}
+
+func (j *JWTService) ValidateToken(tokenString string) (map[string]interface{}, error) {
+	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+		return j.secretKey, nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
+	}
+
+	return nil, errors.New("invalid token")
 }
