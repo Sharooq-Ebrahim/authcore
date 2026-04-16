@@ -43,7 +43,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.authService.Register(req.Email, req.Password, entity.RoleUser)
+	err := h.authService.Register(r.Context(), req.Email, req.Password, entity.RoleUser)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
@@ -76,7 +76,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	accessToken, refreshToken, err := h.authService.Login(req.Email, req.Password)
+	accessToken, refreshToken, err := h.authService.Login(r.Context(), req.Email, req.Password)
 
 	if err != nil {
 		writeResponse(w, http.StatusUnauthorized, false, "", nil, err.Error())
@@ -106,7 +106,7 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(req.RefreshToken)
+	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(r.Context(), req.RefreshToken)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
@@ -136,7 +136,7 @@ func (h *AuthHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, err := h.authService.VerifyToken(req.Token)
+	claims, err := h.authService.VerifyToken(r.Context(), req.Token)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
@@ -165,7 +165,7 @@ func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	claims, err := h.authService.GetUserProfile(token)
+	claims, err := h.authService.GetUserProfile(r.Context(), token)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
@@ -193,7 +193,7 @@ func (h *AuthHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.authService.AssignRole(req.Email, req.Role)
+	err := h.authService.AssignRole(r.Context(), req.Email, req.Role)
 
 	if err != nil {
 		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())

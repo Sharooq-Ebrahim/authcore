@@ -4,6 +4,7 @@ import (
 	"authcore/internal/domain/entity"
 	"authcore/internal/domain/repository"
 	"authcore/internal/domain/service"
+	"context"
 
 	"errors"
 )
@@ -18,9 +19,9 @@ func NewAuthService(repo repository.UserRepository, passwordService service.Pass
 	return &AuthService{repo: repo, passwordService: passwordService, tokenService: tokenService}
 }
 
-func (s *AuthService) Register(email, password, role string) error {
+func (s *AuthService) Register(ctx context.Context, email, password, role string) error {
 
-	user, err := s.repo.GetUserByEmail(email)
+	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -35,7 +36,7 @@ func (s *AuthService) Register(email, password, role string) error {
 		return err
 	}
 
-	err = s.repo.CreateUser(email, hashedPassword, role)
+	err = s.repo.CreateUser(ctx, email, hashedPassword, role)
 
 	if err != nil {
 		return err
@@ -45,9 +46,9 @@ func (s *AuthService) Register(email, password, role string) error {
 
 }
 
-func (s *AuthService) Login(email, password string) (string, string, error) {
+func (s *AuthService) Login(ctx context.Context, email, password string) (string, string, error) {
 
-	user, err := s.repo.GetUserByEmail(email)
+	user, err := s.repo.GetUserByEmail(ctx, email)
 
 	if err != nil {
 		return "", "", err
@@ -79,7 +80,7 @@ func (s *AuthService) Login(email, password string) (string, string, error) {
 
 }
 
-func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) {
+func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (string, string, error) {
 
 	userID, err := s.tokenService.ValidateRefreshToken(refreshToken)
 
@@ -87,7 +88,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 		return "", "", err
 	}
 
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.repo.GetUserByID(ctx, userID)
 
 	if err != nil {
 		return "", "", err
@@ -113,7 +114,7 @@ func (s *AuthService) RefreshToken(refreshToken string) (string, string, error) 
 
 }
 
-func (s *AuthService) VerifyToken(token string) (map[string]interface{}, error) {
+func (s *AuthService) VerifyToken(ctx context.Context, token string) (map[string]interface{}, error) {
 
 	claims, err := s.tokenService.ValidateToken(token)
 
@@ -125,7 +126,7 @@ func (s *AuthService) VerifyToken(token string) (map[string]interface{}, error) 
 
 }
 
-func (s *AuthService) GetUserProfile(token string) (map[string]interface{}, error) {
+func (s *AuthService) GetUserProfile(ctx context.Context, token string) (map[string]interface{}, error) {
 
 	claims, err := s.tokenService.ValidateToken(token)
 
@@ -144,7 +145,7 @@ func (s *AuthService) GetUserProfile(token string) (map[string]interface{}, erro
 		return nil, errors.New("userID not found in token")
 	}
 
-	user, err := s.repo.GetUserByID(userID)
+	user, err := s.repo.GetUserByID(ctx, userID)
 
 	if err != nil {
 		return nil, err
@@ -163,9 +164,9 @@ func (s *AuthService) GetUserProfile(token string) (map[string]interface{}, erro
 
 }
 
-func (s *AuthService) AssignRole(email, role string) error {
+func (s *AuthService) AssignRole(ctx context.Context, email, role string) error {
 
-	user, err := s.repo.GetUserByEmail(email)
+	user, err := s.repo.GetUserByEmail(ctx, email)
 
 	if err != nil {
 		return err
@@ -179,7 +180,7 @@ func (s *AuthService) AssignRole(email, role string) error {
 		return errors.New("invalid role")
 	}
 
-	err = s.repo.UpdateUserRole(user.ID, role)
+	err = s.repo.UpdateUserRole(ctx, user.ID, role)
 
 	if err != nil {
 		return err
