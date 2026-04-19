@@ -31,14 +31,15 @@ func main() {
 
 	userhandler := handler.NewAuthHandler(userService)
 
-	http.HandleFunc("/register", userhandler.Register)
-	http.HandleFunc("/login", userhandler.Login)
-	http.HandleFunc("/refresh", userhandler.RefreshToken)
-	http.HandleFunc("/verify", userhandler.VerifyToken)
-	http.HandleFunc("/profile", userhandler.GetUserProfile)
-	http.HandleFunc("/assign-role", userhandler.AssignRole)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/register", userhandler.Register)
+	mux.HandleFunc("/login", userhandler.Login)
+	mux.HandleFunc("/refresh", userhandler.RefreshToken)
+	mux.HandleFunc("/verify", userhandler.VerifyToken)
+	mux.HandleFunc("/profile", userhandler.GetUserProfile)
+	mux.HandleFunc("/assign-role", userhandler.AssignRole)
 
-	err = http.ListenAndServe(":"+cfg.PORT, nil)
+	err = http.ListenAndServe(":"+cfg.PORT, mux)
 
 	if err != nil {
 		log.Fatal("Failed to start server:", err)

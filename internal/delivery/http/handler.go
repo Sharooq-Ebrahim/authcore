@@ -46,7 +46,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 	err := h.authService.Register(r.Context(), req.Email, req.Password, entity.RoleUser)
 
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err)
 		return
 	}
 
@@ -109,7 +109,7 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	newAccessToken, newRefreshToken, err := h.authService.RefreshToken(r.Context(), req.RefreshToken)
 
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err)
 		return
 	}
 
@@ -139,7 +139,7 @@ func (h *AuthHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 	claims, err := h.authService.VerifyToken(r.Context(), req.Token)
 
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err)
 		return
 	}
 
@@ -168,7 +168,7 @@ func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 	claims, err := h.authService.GetUserProfile(r.Context(), token)
 
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err)
 		return
 	}
 
@@ -196,7 +196,7 @@ func (h *AuthHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 	err := h.authService.AssignRole(r.Context(), req.Email, req.Role)
 
 	if err != nil {
-		writeResponse(w, http.StatusBadRequest, false, "", nil, err.Error())
+		writeResponse(w, http.StatusBadRequest, false, "", nil, err)
 		return
 	}
 

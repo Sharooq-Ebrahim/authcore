@@ -15,6 +15,10 @@ type APIResponse struct {
 func writeResponse(w http.ResponseWriter, status int, success bool, message string, data interface{}, err interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
+	
+	if errStr, ok := err.(string); ok && errStr != "" {
+		err = map[string]string{"message": errStr}
+	}
 
 	json.NewEncoder(w).Encode(APIResponse{
 		Success: success,

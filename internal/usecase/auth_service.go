@@ -4,6 +4,7 @@ import (
 	"authcore/internal/domain/entity"
 	"authcore/internal/domain/repository"
 	"authcore/internal/domain/service"
+	"authcore/internal/domain/apperrors"
 	"context"
 
 	"errors"
@@ -27,7 +28,7 @@ func (s *AuthService) Register(ctx context.Context, email, password, role string
 	}
 
 	if user != nil {
-		return errors.New("account already exists")
+		return apperrors.ErrAccountAlreadyExists
 	}
 
 	hashedPassword, err := s.passwordService.HashPassword(password)
@@ -55,13 +56,13 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 	}
 
 	if user == nil {
-		return "", "", errors.New("Invalid Email or Password")
+		return "", "", apperrors.ErrInvalidCredentials
 	}
 
 	err = s.passwordService.CheckPassword(password, user.PasswordHash)
 
 	if err != nil {
-		return "", "", errors.New("Invalid Email or Password")
+		return "", "", apperrors.ErrInvalidCredentials
 	}
 
 	accessToken, err := s.tokenService.GenerateToken(user)
@@ -95,7 +96,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (st
 	}
 
 	if user == nil {
-		return "", "", errors.New("user not found")
+		return "", "", apperrors.ErrUserNotFound
 	}
 
 	newAccessToken, err := s.tokenService.GenerateToken(user)
@@ -152,7 +153,7 @@ func (s *AuthService) GetUserProfile(ctx context.Context, token string) (map[str
 	}
 
 	if user == nil {
-		return nil, errors.New("user not found")
+		return nil, apperrors.ErrUserNotFound
 	}
 
 	return map[string]interface{}{
@@ -173,11 +174,11 @@ func (s *AuthService) AssignRole(ctx context.Context, email, role string) error 
 	}
 
 	if user == nil {
-		return errors.New("user not found")
+		return apperrors.ErrUserNotFound
 	}
 
 	if role != entity.RoleUser && role != entity.RoleAdmin {
-		return errors.New("invalid role")
+		return apperrors.ErrInvalidInput
 	}
 
 	err = s.repo.UpdateUserRole(ctx, user.ID, role)
