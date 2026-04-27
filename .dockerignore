@@ -1,0 +1,9 @@
+.git
+.vscode
+.env
+vendor/
+*.log
+tmp/
+*.exe
+*.bin
+authcore
