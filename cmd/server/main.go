@@ -21,6 +21,10 @@ func main() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
+	if err := db.RunMigration(cfg.DatabaseURL); err != nil {
+		log.Fatal("Failed to apply migration:", err)
+	}
+
 	userRepo := repository.NewUserRepository(dbConn)
 
 	jwtService := security.NewJWTService(cfg.JWTSecret, cfg.JWTExpirationMinutes, cfg.JWTRefreshExpirationHours)

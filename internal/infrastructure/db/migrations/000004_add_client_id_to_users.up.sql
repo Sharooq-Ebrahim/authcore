@@ -1,0 +1,7 @@
+ALTER TABLE users ADD COLUMN IF NOT EXISTS client_id UUID;
+
+ALTER TABLE users
+ADD CONSTRAINT fk_users_client
+FOREIGN KEY (client_id)
+REFERENCES clients(id)
+ON DELETE CASCADE;

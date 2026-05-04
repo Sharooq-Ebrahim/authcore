@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS clients (
+    id UUID PRIMARY KEY,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
