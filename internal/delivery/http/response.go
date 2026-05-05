@@ -12,7 +12,7 @@ type APIResponse struct {
 	Error   interface{} `json:"error,omitempty"`
 }
 
-func writeResponse(w http.ResponseWriter, status int, success bool, message string, data interface{}, err interface{}) {
+func WriteResponse(w http.ResponseWriter, status int, success bool, message string, data interface{}, err interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	

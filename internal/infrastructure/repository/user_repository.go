@@ -14,14 +14,14 @@ func NewUserRepository(db *sql.DB) *userRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) CreateUser(ctx context.Context, email, password, role string) error {
+func (r *userRepository) CreateUser(ctx context.Context, email, password, role, clientID string) error {
 
 	user := entity.User{}
 
 	err := r.db.QueryRowContext(
 		ctx,
-		"INSERT INTO users (email, password, role, created_at) VALUES ($1, $2, $3, NOW()) RETURNING id",
-		email, password, role,
+		"INSERT INTO users (email, password_hash, role, client_id, created_at) VALUES ($1, $2, $3, $4, NOW()) RETURNING id",
+		email, password, role, clientID,
 	).Scan(&user.ID)
 
 	if err != nil {
@@ -37,7 +37,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*ent
 
 	err := r.db.QueryRowContext(
 		ctx,
-		"SELECT id, email, password, role FROM users WHERE email = $1",
+		"SELECT id, email, password_hash, role FROM users WHERE email = $1",
 		email,
 	).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Role)
 
@@ -55,7 +55,7 @@ func (r *userRepository) GetUserByID(ctx context.Context, id string) (*entity.Us
 
 	user := entity.User{}
 
-	err := r.db.QueryRowContext(ctx, "SELECT id, email, password, role FROM users WHERE id = $1", id).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Role)
+	err := r.db.QueryRowContext(ctx, "SELECT id, email, password_hash, role FROM users WHERE id = $1", id).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.Role)
 
 	if err != nil {
 		if err == sql.ErrNoRows {

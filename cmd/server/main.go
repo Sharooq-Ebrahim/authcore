@@ -26,22 +26,33 @@ func main() {
 	}
 
 	userRepo := repository.NewUserRepository(dbConn)
+	clientRepo := repository.NewClientRepository(dbConn)
 
 	jwtService := security.NewJWTService(cfg.JWTSecret, cfg.JWTExpirationMinutes, cfg.JWTRefreshExpirationHours)
 
 	passwordService := security.NewBcryptService()
 
 	userService := usecase.NewAuthService(userRepo, passwordService, jwtService)
+	clientService := usecase.NewClientService(clientRepo)
 
 	userhandler := handler.NewAuthHandler(userService)
+	clientHandler := handler.NewClientHandler(clientService)
+
+	withAPIKey := handler.APIKeyMiddleware(clientService)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/register", userhandler.Register)
-	mux.HandleFunc("/login", userhandler.Login)
-	mux.HandleFunc("/refresh", userhandler.RefreshToken)
-	mux.HandleFunc("/verify", userhandler.VerifyToken)
-	mux.HandleFunc("/profile", userhandler.GetUserProfile)
-	mux.HandleFunc("/assign-role", userhandler.AssignRole)
+
+	mux.HandleFunc("POST /register", withAPIKey(userhandler.Register))
+	mux.HandleFunc("POST /login", withAPIKey(userhandler.Login))
+	mux.HandleFunc("POST /refresh", withAPIKey(userhandler.RefreshToken))
+	mux.HandleFunc("GET /verify", withAPIKey(userhandler.VerifyToken))
+	mux.HandleFunc("GET /profile", withAPIKey(userhandler.GetUserProfile))
+	mux.HandleFunc("POST /assign-role", withAPIKey(userhandler.AssignRole))
+
+	mux.HandleFunc("POST /clients", clientHandler.CreateClient)
+	mux.HandleFunc("GET /clients/{id}", clientHandler.GetClient)
+	mux.HandleFunc("POST /clients/{id}/credentials", clientHandler.CreateCredential)
+	mux.HandleFunc("GET /clients/{id}/credentials", clientHandler.GetCredentials)
 
 	err = http.ListenAndServe(":"+cfg.PORT, mux)
 

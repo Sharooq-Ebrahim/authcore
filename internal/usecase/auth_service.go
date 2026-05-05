@@ -1,10 +1,10 @@
 package usecase
 
 import (
+	"authcore/internal/domain/apperrors"
 	"authcore/internal/domain/entity"
 	"authcore/internal/domain/repository"
 	"authcore/internal/domain/service"
-	"authcore/internal/domain/apperrors"
 	"context"
 
 	"errors"
@@ -20,7 +20,7 @@ func NewAuthService(repo repository.UserRepository, passwordService service.Pass
 	return &AuthService{repo: repo, passwordService: passwordService, tokenService: tokenService}
 }
 
-func (s *AuthService) Register(ctx context.Context, email, password, role string) error {
+func (s *AuthService) Register(ctx context.Context, email, password, role, clientID string) error {
 
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
@@ -37,7 +37,7 @@ func (s *AuthService) Register(ctx context.Context, email, password, role string
 		return err
 	}
 
-	err = s.repo.CreateUser(ctx, email, hashedPassword, role)
+	err = s.repo.CreateUser(ctx, email, hashedPassword, role, clientID)
 
 	if err != nil {
 		return err

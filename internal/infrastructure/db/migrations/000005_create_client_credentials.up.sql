@@ -1,5 +1,5 @@
 CREATE TABLE client_credentials (
-    id UUID PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id UUID NOT NULL,
     key TEXT UNIQUE NOT NULL,
     name TEXT,
