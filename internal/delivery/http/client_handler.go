@@ -1,8 +1,10 @@
 package http
 
 import (
+	"authcore/internal/domain/apperrors"
 	"authcore/internal/usecase"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 )
@@ -16,7 +18,6 @@ func NewClientHandler(clientService *usecase.ClientService) *ClientHandler {
 }
 
 func (h *ClientHandler) CreateClient(w http.ResponseWriter, r *http.Request) {
-
 
 	var req struct {
 		Name string `json:"name"`
@@ -64,7 +65,6 @@ func (h *ClientHandler) GetClient(w http.ResponseWriter, r *http.Request) {
 
 func (h *ClientHandler) CreateCredential(w http.ResponseWriter, r *http.Request) {
 
-
 	id := r.PathValue("id")
 	if id == "" {
 		WriteResponse(w, http.StatusBadRequest, false, "", nil, "Client ID is required")
@@ -82,7 +82,7 @@ func (h *ClientHandler) CreateCredential(w http.ResponseWriter, r *http.Request)
 
 	cred, err := h.clientService.GenerateCredential(r.Context(), id, req.Name)
 	if err != nil {
-		if err.Error() == "client not found" {
+		if errors.Is(err, apperrors.ErrClientNotFound) {
 			WriteResponse(w, http.StatusNotFound, false, "", nil, err.Error())
 			return
 		}

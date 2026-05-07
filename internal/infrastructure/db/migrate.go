@@ -10,8 +10,6 @@ import (
 
 func RunMigration(dbURL string) error {
 
-	log.Println(dbURL)
-
 	m, err := migrate.New(
 		"file://internal/infrastructure/db/migrations",
 		dbURL,

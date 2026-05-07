@@ -4,7 +4,6 @@ import (
 	"authcore/internal/domain/entity"
 	"authcore/internal/usecase"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strings"
 )
@@ -39,9 +38,12 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clientID := r.Context().Value(ClientIDKey).(string)
+	clientID, ok := r.Context().Value(ClientIDKey).(string)
 
-	log.Println("ClientID:", clientID)
+	if !ok || clientID == "" {
+		WriteResponse(w, http.StatusBadRequest, false, "", nil, "Client ID not provided")
+		return
+	}
 
 	err := h.authService.Register(r.Context(), req.Email, req.Password, entity.RoleUser, clientID)
 
@@ -112,19 +114,23 @@ func (h *AuthHandler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) VerifyToken(w http.ResponseWriter, r *http.Request) {
 
-	var req struct {
-		Token string `json:"token"`
+	authHeader := r.Header.Get("Authorization")
+
+	token := authHeader
+
+	if parts := strings.Split(authHeader, " "); len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		token = parts[1]
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		WriteResponse(w, http.StatusBadRequest, false, "", nil, "Invalid request body")
+	if token == "" {
+		WriteResponse(w, http.StatusBadRequest, false, "", nil, "Token not provided")
 		return
 	}
 
-	claims, err := h.authService.VerifyToken(r.Context(), req.Token)
+	claims, err := h.authService.VerifyToken(r.Context(), token)
 
 	if err != nil {
-		WriteResponse(w, http.StatusBadRequest, false, "", nil, err)
+		WriteResponse(w, http.StatusBadRequest, false, "", nil, "Invalid Token")
 		return
 	}
 
@@ -136,6 +142,7 @@ func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 
 	authHeader := r.Header.Get("Authorization")
 	token := authHeader
+
 	if parts := strings.Split(authHeader, " "); len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
 		token = parts[1]
 	}
@@ -158,6 +165,32 @@ func (h *AuthHandler) GetUserProfile(w http.ResponseWriter, r *http.Request) {
 
 func (h *AuthHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 
+	authHeader := r.Header.Get("Authorization")
+
+	token := authHeader
+
+	if parts := strings.Split(authHeader, " "); len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		token = parts[1]
+	}
+
+	if token == "" {
+		WriteResponse(w, http.StatusUnauthorized, false, "", nil, "Token not provided")
+		return
+	}
+
+	profile, err := h.authService.GetUserProfile(r.Context(), token)
+
+	if err != nil {
+		WriteResponse(w, http.StatusUnauthorized, false, "", nil, err)
+		return
+	}
+
+	role, ok := profile["role"].(string)
+	if !ok || role != entity.RoleAdmin {
+		WriteResponse(w, http.StatusForbidden, false, "", nil, "Only admins can assign roles")
+		return
+	}
+
 	var req struct {
 		Email string `json:"email"`
 		Role  string `json:"role"`
@@ -168,7 +201,7 @@ func (h *AuthHandler) AssignRole(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.authService.AssignRole(r.Context(), req.Email, req.Role)
+	err = h.authService.AssignRole(r.Context(), req.Email, req.Role)
 
 	if err != nil {
 		WriteResponse(w, http.StatusBadRequest, false, "", nil, err)
