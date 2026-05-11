@@ -14,6 +14,10 @@ type Config struct {
 	JWTSecret                 string
 	JWTExpirationMinutes      int
 	JWTRefreshExpirationHours int
+
+	GoogleClientID     string
+	GoogleClientSecret string
+	GoogleCallbackURL  string
 }
 
 func LoadEnv() *Config {
@@ -37,5 +41,9 @@ func LoadEnv() *Config {
 		JWTSecret:                 os.Getenv("JWT_SECRET"),
 		JWTExpirationMinutes:      expMin,
 		JWTRefreshExpirationHours: refreshHours,
+
+		GoogleClientID:     os.Getenv("GOOGLE_CLIENT_ID"),
+		GoogleClientSecret: os.Getenv("GOOGLE_CLIENT_SECRET"),
+		GoogleCallbackURL:  os.Getenv("GOOGLE_CALLBACK_URL"),
 	}
 }
