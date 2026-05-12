@@ -7,6 +7,7 @@ import (
 	"authcore/internal/infrastructure/repository"
 	"authcore/internal/infrastructure/security"
 	"authcore/internal/oauth"
+	"authcore/internal/delivery/http/middleware"
 	"authcore/internal/usecase"
 	"log"
 	"net/http"
@@ -47,6 +48,7 @@ func main() {
 	oauthHandler := handler.NewOAuthHandler(oauthService)
 
 	withAPIKey := handler.APIKeyMiddleware(clientService)
+	rateLimiter := middleware.NewRateLimiter(cfg.RateLimitRPS, cfg.RateLimitBurst)
 
 	mux := http.NewServeMux()
 
@@ -65,10 +67,10 @@ func main() {
 	mux.HandleFunc("POST /clients/{id}/credentials", clientHandler.CreateCredential)
 	mux.HandleFunc("GET /clients/{id}/credentials", clientHandler.GetCredentials)
 
-	err = http.ListenAndServe(":"+cfg.PORT, mux)
+	log.Printf("Server starting on port %s", cfg.PORT)
+	err = http.ListenAndServe(":"+cfg.PORT, rateLimiter.Limit(mux))
 
 	if err != nil {
 		log.Fatal("Failed to start server:", err)
 	}
-
 }
